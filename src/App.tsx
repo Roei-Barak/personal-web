@@ -1,43 +1,24 @@
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import Home from './pages/Home';
-// import SkiDashboard from './pages/SkiDashboard';
-
-// function App() {
-//   return (
-//     <Router>
-//       <Routes>
-//         {/* דף הבית - הפורטפוליו הציבורי שלך */}
-//         <Route path="/" element={<Home />} />
-        
-//         {/* דשבורד הסקי - נגיש בכתובת /ski */}
-//         <Route path="/ski" element={<SkiDashboard />} />
-        
-//         {/* אופציונלי: ניתוב לכל כתובת לא מוכרת בחזרה לדף הבית */}
-//         <Route path="*" element={<Home />} />
-//       </Routes>
-//     </Router>
-//   );
-// }
-
-// export default App;
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import SkiDashboard from './pages/SkiDashboard';
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './routes/Home';
+import SkiDashboard from './routes/SkiDashboard';
+// הוסף כאן routes נוספים בעתיד, כמו:
+// import Projects from './routes/Projects';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* דף הפורטפוליו הראשי */}
-        <Route path="/" element={<Home />} />
-        
-        {/* דף דשבורד סקי */}
-        <Route path="/ski" element={<SkiDashboard />} />
-        
-        {/* ניתוב לכל דף אחר בחזרה לבית */}
-        <Route path="*" element={<Home />} />
-      </Routes>
-    </Router>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 text-white font-heebo">
+      <Navbar />
+      <main className="pt-20"> {/* כדי שה-Navbar לא יכסה תוכן */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/ski" element={<SkiDashboard />} />
+          {/* דוגמה: <Route path="/projects" element={<Projects />} /> */}
+        </Routes>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
