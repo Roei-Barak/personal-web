@@ -5,6 +5,9 @@ import Home from './routes/Home';
 import SkiDashboard from './routes/SkiDashboard';
 // הוסף כאן routes נוספים בעתיד, כמו:
 // import Projects from './routes/Projects';
+import ProtectedRoute from './components/ProtectedRoute';
+
+
 
 function App() {
   return (
@@ -13,8 +16,11 @@ function App() {
       <main className="pt-20"> {/* כדי שה-Navbar לא יכסה תוכן */}
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/ski" element={<SkiDashboard />} />
-          {/* דוגמה: <Route path="/projects" element={<Projects />} /> */}
+          <Route path="/ski" element={
+            <ProtectedRoute>
+              <SkiDashboard />
+            </ProtectedRoute>
+          } />
         </Routes>
       </main>
       <Footer />
