@@ -318,99 +318,14 @@ function ResortMap({ resorts }: MapProps) {
 export default function SkiDashboard() {
   const [phase, setPhase] = useState<'before' | 'during' | 'after'>('before');
 
-  const [items, setItems] = useState<PackItem[]>([]);
-  // Fetch items from backend on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/items', { headers: { Authorization: 'Bearer ' + token } })
-      .then(res => res.json())
-      .then(data => setItems(data));
-  }, []);
-  const [reminders, setReminders] = useState<Reminder[]>([]);
-  // Fetch reminders from backend on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/reminders', { headers: { Authorization: 'Bearer ' + token } })
-      .then(res => res.json())
-      .then(data => setReminders(data));
-  }, []);
-  const [resorts, setResorts] = useState<Resort[]>(INIT_RESORTS);
-  // Fetch resorts from backend on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/resorts', { headers: { Authorization: 'Bearer ' + token } })
-      .then(res => res.json())
-      .then(data => setResorts(data));
-  }, []);
+  const [items,      setItems]      = useState<PackItem[]>(INIT_ITEMS);
+  const [reminders,  setReminders]  = useState<Reminder[]>(INIT_REMINDERS);
+  const [resorts,    setResorts]    = useState<Resort[]>(INIT_RESORTS);
   const [insurances, setInsurances] = useState<Insurance[]>(INIT_INSURANCE);
-  // Fetch insurances from backend on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/insurance', { headers: { Authorization: 'Bearer ' + token } })
-      .then(res => res.json())
-      .then(data => setInsurances(data));
-  }, []);
-  const [places, setPlaces] = useState<Place[]>(INIT_PLACES);
-  // Fetch places from backend on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/places', { headers: { Authorization: 'Bearer ' + token } })
-      .then(res => res.json())
-      .then(data => setPlaces(data));
-  }, []);
+  const [places,     setPlaces]     = useState<Place[]>(INIT_PLACES);
   const [expenses,   setExpenses]   = useState<Expense[]>([]);
   const [media,      setMedia]      = useState<MediaItem[]>([]);
-  const [uploads, setUploads] = useState<UploadTask[]>(INIT_UPLOADS);
-  // Fetch uploads from backend on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    fetch('/api/uploads', { headers: { Authorization: 'Bearer ' + token } })
-      .then(res => res.json())
-      .then(data => setUploads(data));
-  }, []);
-
-  // Add upload via API
-  const addUpload = async (uploadData: Omit<UploadTask, 'id'>) => {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/uploads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(uploadData)
-    });
-    if (res.ok) {
-      const uploadsRes = await fetch('/api/uploads', { headers: { Authorization: 'Bearer ' + token } });
-      setUploads(await uploadsRes.json());
-    }
-  };
-
-  // Edit upload via API
-  const saveUploadEdit = async (id: number, editData: Partial<UploadTask>) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/uploads/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(editData)
-    });
-    const uploadsRes = await fetch('/api/uploads', { headers: { Authorization: 'Bearer ' + token } });
-    setUploads(await uploadsRes.json());
-  };
-
-  // Delete upload via API
-  const deleteUpload = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/uploads/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const uploadsRes = await fetch('/api/uploads', { headers: { Authorization: 'Bearer ' + token } });
-    setUploads(await uploadsRes.json());
-  };
+  const [uploads,    setUploads]    = useState<UploadTask[]>(INIT_UPLOADS);
   const [openCats,   setOpenCats]   = useState<Record<string, boolean>>({});
   const [activeTip,  setActiveTip]  = useState<string | null>(null);
 
@@ -478,242 +393,24 @@ export default function SkiDashboard() {
   }, [balances]);
 
   // ─── helpers ───
-
-  // Add item via API
-  const addItem = async () => {
+  const addItem = () => {
     if (!nName.trim()) return;
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/items', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ cat: nCat, name: nName, status: nSt, packed: false, optional: false, img: nImg || 'https://images.unsplash.com/photo-1551698618-1fed5d978028?w=300&h=300&fit=crop' })
-    });
-    if (res.ok) {
-      // Refresh items
-      const itemsRes = await fetch('/api/items', { headers: { Authorization: 'Bearer ' + token } });
-      setItems(await itemsRes.json());
-      setNName(''); setNImg('');
-    }
+    setItems(p => [...p, { id: Date.now(), cat: nCat, name: nName, status: nSt, packed: false, optional: false, img: nImg || 'https://images.unsplash.com/photo-1551698618-1fed5d978028?w=300&h=300&fit=crop' }]);
+    setNName(''); setNImg('');
   };
+  const saveItemEdit = (id: number) => { setItems(p => p.map(i => i.id === id ? { ...i, ...editItemForm } : i)); setEditItemId(null); };
 
-  // Edit item via API
-  const saveItemEdit = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/items/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(editItemForm)
-    });
-    // Refresh items
-    const itemsRes = await fetch('/api/items', { headers: { Authorization: 'Bearer ' + token } });
-    setItems(await itemsRes.json());
-    setEditItemId(null);
-  };
+  const addReminder = () => { if (!newRemText.trim()) return; setReminders(p => [...p, { id: Date.now(), text: newRemText, done: false, priority: newRemPrio, emoji: newRemEmoji }]); setNewRemText(''); };
+  const saveRemEdit  = (id: number) => { setReminders(p => p.map(r => r.id === id ? { ...r, text: editRemText } : r)); setEditRemId(null); };
 
-  // Delete item via API
-  const deleteItem = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/items/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    // Refresh items
-    const itemsRes = await fetch('/api/items', { headers: { Authorization: 'Bearer ' + token } });
-    setItems(await itemsRes.json());
-  };
+  const addResort    = () => { setResorts(p => [...p, { ...newResort, id: Date.now() }]); setNewResort({ name:'', flag:'🏔️', country:'', flight:'', pkg:'', level:'כל הרמות', rating:3, details:'' }); setShowAddResort(false); };
+  const saveResortEdit=(id:number)=>{ setResorts(p=>p.map(r=>r.id===id?{...r,...editResortForm}:r)); setEditResortId(null); };
 
-  // Toggle packed via API
-  const togglePacked = async (id: number, packed: boolean) => {
-    const token = localStorage.getItem('token');
-    const item = items.find(i => i.id === id);
-    if (!item) return;
-    await fetch(`/api/items/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ ...item, packed: !packed })
-    });
-    // Refresh items
-    const itemsRes = await fetch('/api/items', { headers: { Authorization: 'Bearer ' + token } });
-    setItems(await itemsRes.json());
-  };
+  const addIns = () => { setInsurances(p => [...p, { ...newIns, id: Date.now(), features: newInsFeatures.split(',').map(s=>s.trim()).filter(Boolean) }]); setShowAddIns(false); setNewInsFeatures(''); setNewIns({ name:'',logo:'🛡️',medical:'',sports:true,cancel:true,cancelNote:'',price:'',sports_detail:'',contact:'' }); };
+  const saveInsEdit=(id:number)=>{ setInsurances(p=>p.map(i=>i.id===id?{...i,...editInsForm}:i)); setEditInsId(null); };
 
-
-  // Add reminder via API
-  const addReminder = async () => {
-    if (!newRemText.trim()) return;
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/reminders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ text: newRemText, done: false, priority: newRemPrio, emoji: newRemEmoji })
-    });
-    if (res.ok) {
-      const remRes = await fetch('/api/reminders', { headers: { Authorization: 'Bearer ' + token } });
-      setReminders(await remRes.json());
-      setNewRemText('');
-    }
-  };
-
-  // Edit reminder via API
-  const saveRemEdit = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/reminders/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ text: editRemText })
-    });
-    const remRes = await fetch('/api/reminders', { headers: { Authorization: 'Bearer ' + token } });
-    setReminders(await remRes.json());
-    setEditRemId(null);
-  };
-
-  // Delete reminder via API
-  const deleteReminder = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/reminders/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const remRes = await fetch('/api/reminders', { headers: { Authorization: 'Bearer ' + token } });
-    setReminders(await remRes.json());
-  };
-
-  // Toggle done via API
-  const toggleReminderDone = async (id: number, done: boolean) => {
-    const token = localStorage.getItem('token');
-    const reminder = reminders.find(r => r.id === id);
-    if (!reminder) return;
-    await fetch(`/api/reminders/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ ...reminder, done: !done })
-    });
-    const remRes = await fetch('/api/reminders', { headers: { Authorization: 'Bearer ' + token } });
-    setReminders(await remRes.json());
-  };
-
-
-  // Add resort via API
-  const addResort = async () => {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/resorts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(newResort)
-    });
-    if (res.ok) {
-      const resortsRes = await fetch('/api/resorts', { headers: { Authorization: 'Bearer ' + token } });
-      setResorts(await resortsRes.json());
-      setNewResort({ name:'', flag:'🏔️', country:'', flight:'', pkg:'', level:'כל הרמות', rating:3, details:'' });
-      setShowAddResort(false);
-    }
-  };
-
-  // Edit resort via API
-  const saveResortEdit = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/resorts/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(editResortForm)
-    });
-    const resortsRes = await fetch('/api/resorts', { headers: { Authorization: 'Bearer ' + token } });
-    setResorts(await resortsRes.json());
-    setEditResortId(null);
-  };
-
-  // Delete resort via API
-  const deleteResort = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/resorts/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const resortsRes = await fetch('/api/resorts', { headers: { Authorization: 'Bearer ' + token } });
-    setResorts(await resortsRes.json());
-  };
-
-  // Add insurance via API
-  const addIns = async () => {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/insurance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ ...newIns, features: newInsFeatures.split(',').map(s=>s.trim()).filter(Boolean) })
-    });
-    if (res.ok) {
-      const insuranceRes = await fetch('/api/insurance', { headers: { Authorization: 'Bearer ' + token } });
-      setInsurances(await insuranceRes.json());
-      setShowAddIns(false);
-      setNewInsFeatures('');
-      setNewIns({ name:'',logo:'🛡️',medical:'',sports:true,cancel:true,cancelNote:'',price:'',sports_detail:'',contact:'' });
-    }
-  };
-
-  // Edit insurance via API
-  const saveInsEdit = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/insurance/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(editInsForm)
-    });
-    const insuranceRes = await fetch('/api/insurance', { headers: { Authorization: 'Bearer ' + token } });
-    setInsurances(await insuranceRes.json());
-    setEditInsId(null);
-  };
-
-  // Delete insurance via API
-  const deleteIns = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/insurance/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const insuranceRes = await fetch('/api/insurance', { headers: { Authorization: 'Bearer ' + token } });
-    setInsurances(await insuranceRes.json());
-  };
-
-  // Add place via API
-  const addPlace = async () => {
-    if (!newPlace.name.trim()) return;
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/places', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(newPlace)
-    });
-    if (res.ok) {
-      const placesRes = await fetch('/api/places', { headers: { Authorization: 'Bearer ' + token } });
-      setPlaces(await placesRes.json());
-      setShowAddPlace(false);
-      setNewPlace({ name:'', type:'בילוי', emoji:'📍', note:'' });
-    }
-  };
-
-  // Edit place via API
-  const savePlaceEdit = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/places/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(editPlaceForm)
-    });
-    const placesRes = await fetch('/api/places', { headers: { Authorization: 'Bearer ' + token } });
-    setPlaces(await placesRes.json());
-    setEditPlaceId(null);
-  };
-
-  // Delete place via API
-  const deletePlace = async (id: number) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/places/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const placesRes = await fetch('/api/places', { headers: { Authorization: 'Bearer ' + token } });
-    setPlaces(await placesRes.json());
-  };
+  const addPlace    = () => { if (!newPlace.name.trim()) return; setPlaces(p => [...p, { ...newPlace, id: Date.now(), visited: false }]); setShowAddPlace(false); setNewPlace({ name:'', type:'בילוי', emoji:'📍', note:'' }); };
+  const savePlaceEdit=(id:number)=>{ setPlaces(p=>p.map(x=>x.id===id?{...x,...editPlaceForm}:x)); setEditPlaceId(null); };
 
   const addExpense = () => {
     if (!expDesc.trim() || !expAmt || !expSplit.length) return;
@@ -1093,7 +790,7 @@ export default function SkiDashboard() {
                             <span style={{ fontSize:12, color:'#34d399', fontWeight:700 }}>{ins.price}</span>
                           </div>
                           <button className="eb" onClick={e => { e.stopPropagation(); setEditInsId(ins.id); setEditInsForm({...ins}); }}>✏️</button>
-                          <button className="db" onClick={e => { e.stopPropagation(); deleteIns(ins.id); }}>✕</button>
+                          <button className="db" onClick={e => { e.stopPropagation(); setInsurances(p => p.filter(x => x.id !== ins.id)); }}>✕</button>
                           <span style={{ color:'#3d5269', fontSize:11 }}>{expandedIns===ins.id ? '▲' : '▼'}</span>
                         </div>
                         {expandedIns === ins.id && (
@@ -1374,7 +1071,7 @@ export default function SkiDashboard() {
             <div style={S.card}>
               <h2 style={{ fontSize:15, fontWeight:700, marginBottom:13 }}>📤 תוכן להעלאה</h2>
               {uploads.map(task => (
-                <div key={task.id} onClick={() => saveUploadEdit(task.id, { done: !task.done })}
+                <div key={task.id} onClick={() => setUploads(p => p.map(t => t.id===task.id ? {...t, done:!t.done} : t))}
                   style={{ display:'flex', alignItems:'center', gap:9, padding:'10px 12px', borderRadius:9, border:`1px solid ${task.done?'rgba(52,211,153,.28)':'#1a2840'}`, background:task.done?'rgba(52,211,153,.03)':'transparent', cursor:'pointer', marginBottom:7, transition:'all .2s', opacity:task.done?.7:1 }}>
                   <div style={{ width:19, height:19, borderRadius:5, border:`2px solid ${task.done?'#34d399':'#1a2840'}`, background:task.done?'#34d399':'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .2s' }}>
                     {task.done && <svg width="10" height="10" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2.2" fill="none" strokeLinecap="round"/></svg>}

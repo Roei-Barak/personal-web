@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Github, Linkedin, Mail, Phone, MapPin, Download, Terminal, Shield, Cpu, Server, ExternalLink, ChevronRight, Car, MessageCircle, Globe, Sun, Moon, Home as HomeIcon  } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Github, Linkedin, Mail, Phone, MapPin, Download, Terminal, Shield, Cpu, Server, ExternalLink, ChevronRight, Car, MessageCircle, Globe, Sun, Moon, Home as HomeIcon, Lock } from 'lucide-react';
 function Home() {
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('darkMode') === 'true';
@@ -368,6 +370,13 @@ function Home() {
                 className="p-4 bg-white bg-opacity-10 rounded-full hover:bg-opacity-20 transition-all duration-300">
                 <Linkedin size={24} />
               </a>
+              <button 
+                onClick={() => navigate('/login')}
+                className="p-4 bg-white bg-opacity-10 rounded-full hover:bg-opacity-20 transition-all duration-300"
+                title="Admin Login"
+                aria-label="Login">
+                <Lock size={24} />
+              </button>
             </div>
             <p className="text-sm text-blue-200">© 2024 Roei Barak. All rights reserved.</p>
           </div>

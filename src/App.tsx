@@ -1,42 +1,62 @@
-// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import Home from './pages/Home';
-// import SkiDashboard from './pages/SkiDashboard';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import PrivateLayout from './components/layout/PrivateLayout';
 
-// function App() {
-//   return (
-//     <Router>
-//       <Routes>
-//         {/* דף הבית - הפורטפוליו הציבורי שלך */}
-//         <Route path="/" element={<Home />} />
-        
-//         {/* דשבורד הסקי - נגיש בכתובת /ski */}
-//         <Route path="/ski" element={<SkiDashboard />} />
-        
-//         {/* אופציונלי: ניתוב לכל כתובת לא מוכרת בחזרה לדף הבית */}
-//         <Route path="*" element={<Home />} />
-//       </Routes>
-//     </Router>
-//   );
-// }
-
-// export default App;
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// Pages
 import Home from './pages/Home';
+import Login from './pages/Login';
 import SkiDashboard from './pages/SkiDashboard';
+import AdminPanel from './pages/AdminPanel';
+import MusicalDashboard from './pages/MusicalDashboard';
 
 function App() {
   return (
     <Router>
-      <Routes>
-        {/* דף הפורטפוליו הראשי */}
-        <Route path="/" element={<Home />} />
-        
-        {/* דף דשבורד סקי */}
-        <Route path="/ski" element={<SkiDashboard />} />
-        
-        {/* ניתוב לכל דף אחר בחזרה לבית */}
-        <Route path="*" element={<Home />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/ski"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'approved_friend']}>
+                <PrivateLayout>
+                  <SkiDashboard />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/musical"
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <PrivateLayout>
+                  <MusicalDashboard />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <PrivateLayout>
+                  <AdminPanel />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
